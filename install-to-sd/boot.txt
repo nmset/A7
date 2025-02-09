@@ -1,0 +1,17 @@
+# setenv ethaddr "00:01:02:03:04:05" # Look at the sticker inside.
+
+setenv bootargs "console=tty1 console=ttyS2,1500000 root=LABEL=SDROOT rw rootwait net.ifnames=0  fsck.mode=force fsck.repair=yes"
+setenv prefix "/"
+# Using a patched device tree file.
+setenv fdtfile "${prefix}rk3588s-odroid-m2.dtb"
+
+if load ${devtype} ${devnum}:${bootpart} ${kernel_addr_r} ${prefix}Image; then
+  if load ${devtype} ${devnum}:${bootpart} ${fdt_addr_r} ${fdtfile}; then
+    if load ${devtype} ${devnum}:${bootpart} ${ramdisk_addr_r} ${prefix}initramfs-linux.img; then
+      booti ${kernel_addr_r} ${ramdisk_addr_r}:${filesize} ${fdt_addr_r};
+    else
+      booti ${kernel_addr_r} - ${fdt_addr_r};
+    fi;
+  fi;
+fi
+
