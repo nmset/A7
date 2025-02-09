@@ -64,7 +64,7 @@ check_os()
     exit 112
   fi
   echo "# --------------- OS: ${OS_ID}"
-  ${DEFAULT_HUNG_TASK_TIMEOUT}=$(cat /proc/sys/kernel/hung_task_timeout_secs)
+  DEFAULT_HUNG_TASK_TIMEOUT=$(cat /proc/sys/kernel/hung_task_timeout_secs)
   echo 600 > /proc/sys/kernel/hung_task_timeout_secs
   return 0
 }
