@@ -164,11 +164,12 @@ create_filesystems()
 # ---------------- Install Arch -----------------------------------------------
 install_arch()
 {
-  [ ! -f ${AARCH64_TARBALL} ] &&  wget "${AARCH64_TARBALL_URL}"
-  true
-  if [ $? -ne 0 ];then
-    echo "# --------------- Error fetching Arch tarball at ${AARCH64_TARBALL_URL}."
-    exit 130
+  if [ ! -f ${AARCH64_TARBALL} ];then
+    wget "${AARCH64_TARBALL_URL}"
+    if [ $? -ne 0 ];then
+        echo "# --------------- Error fetching Arch tarball at ${AARCH64_TARBALL_URL}."
+        exit 130
+    fi
   fi
   tarballFullPath=$(realpath ${AARCH64_TARBALL})
   mount LABEL="${FILESYSTEM_NAME_ROOT}" ${TARGET_ROOT_MOUNTPOINT}
