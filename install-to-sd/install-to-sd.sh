@@ -208,7 +208,7 @@ setup_and_install_sd()
   fi
   
   read -p "A patched device tree file allows to enable network on the board's ethernet port. Please read the included README.md file in the resources/dts directory. Do you want to use the patched device tree? (y/n): " dtsReply
-  [ "${dtsReply}" != "y" ] && ${USE_PATCHED_DTS}=0
+  [ "${dtsReply}" != "y" ] && USE_PATCHED_DTS=0
 
   create_partitions
   flash_blobs
