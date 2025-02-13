@@ -15,6 +15,10 @@ Use a *fast* SD card at least 8 GB in size. The partitions and content on the ca
 
 See the original [forum thread](https://archlinuxarm.org/forum/viewtopic.php?f=67&t=17166) leading to this project. Any comment should continue in this discussion.
 
+### Notes
+
+A [patched device tree](resources/dts/README.md) for this board is proposed to enable network connection on its ethernet port. This concerns kernel v6.13.
+
 ### Disclaimer
 
 This project is provided as is with no guarantees. Use at your own risks.

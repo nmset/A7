@@ -6,12 +6,12 @@
 
 LSHW_SYSTEM="Hardkernel ODROID-M2"
 OS_RELEASE=/etc/os-release
-WORK_DIR=/root/A7
+WORK_DIR=/tmp/A7
 TARGET_DEVICE=/dev/mmcblk1
 EMMC=/dev/mmcblk0
 BLOB_SPL=spl.bin
 BLOB_UBOOT=uboot.bin
-TARGET_ROOT_MOUNTPOINT=/mnt/SD_ROOT
+TARGET_ROOT_MOUNTPOINT=${WORK_DIR}/SD_ROOT
 AARCH64_TARBALL=ArchLinuxARM-aarch64-latest.tar.gz
 AARCH64_TARBALL_URL="http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz"
 FILESYSTEM_NAME_BOOT="SDBOOT"
@@ -27,6 +27,9 @@ BOOT_SCR=boot.scr
 DTS_FILE=rk3588s-odroid-m2.dts
 DTB_FILE=rk3588s-odroid-m2.dtb
 DTB_DIR_PATH=dtbs/rockchip
+PATCHED_DTS_PATH=resources/dts
+PATCHED_DTS_FILE=rk3588s-odroid-m2.dts.patched
+USE_PATCHED_DTS=1
 
 # ---------------- Check we are root -----------------------------------------------
 check_user()
@@ -172,6 +175,7 @@ install_arch()
     fi
   fi
   tarballFullPath=$(realpath ${AARCH64_TARBALL})
+  mkdir -p ${TARGET_ROOT_MOUNTPOINT}
   mount LABEL="${FILESYSTEM_NAME_ROOT}" ${TARGET_ROOT_MOUNTPOINT}
   RET=$?
   if [ $RET -ne 0 ];then
@@ -188,6 +192,7 @@ install_arch()
     exit 132
   fi
   cp ${BASE_DIR}/${BOOT_TXT} ${TARGET_ROOT_MOUNTPOINT}/root/
+  cp ${BASE_DIR}/../${PATCHED_DTS_PATH}/${PATCHED_DTS_FILE} ${TARGET_ROOT_MOUNTPOINT}/root/
   cd - &> /dev/null
   echo "# --------------- Syncing, please wait..."
   nice -n 19 sync
@@ -201,6 +206,10 @@ setup_and_install_sd()
     echo "# --------------- Aborting on request."
     exit 140
   fi
+  
+  read -p "A patched device tree file allows to enable network on the board's ethernet port. Please read the included README.md file in the resources/dts directory. Do you want to use the patched device tree? (y/n): " dtsReply
+  [ "${dtsReply}" != "y" ] && ${USE_PATCHED_DTS}=0
+
   create_partitions
   flash_blobs
   create_filesystems
@@ -248,22 +257,16 @@ if [ $? -ne 0 ];then
   exit 153
 fi
 
-echo "# --------------- Patching ${DTB_FILE}."
-cp ${DTB_DIR_PATH}/${DTB_FILE} .
-dtc -I dtb -O dts -o ${DTS_FILE} ${DTB_FILE}
-if [ $? -ne 0 ];then
-  echo "# --------------- Error decompiling ${DTB_FILE} in chroot."
-  exit 154
-fi
-cp ${DTS_FILE} ${DTS_FILE}.ori
-
-sed -i "s/clock_in_out = \"output\"/clock_in_out = \"input\"/" ${DTS_FILE}
-sed -i "s/phy-mode = \"rgmii-id\"/phy-mode = \"rgmii-rxid\"/" ${DTS_FILE}
-
-dtc -I dts -O dtb -o ${DTB_FILE} ${DTS_FILE} &> /dev/null # Tons of warnings.
-if [ $? -ne 0 ];then
-  echo "# --------------- Error compiling ${DTS_FILE} in chroot."
-  exit 155
+if [ ${USE_PATCHED_DTS} -ne 1 ];then
+  ln -s ${DTB_DIR_PATH}/${DTB_FILE} .
+else
+  echo "# --------------- Patching ${DTB_FILE}."
+  mv /root/${PATCHED_DTS_FILE} .
+  dtc -q -I dts -O dtb -o ${DTB_FILE} ${PATCHED_DTS_FILE}
+  if [ $? -ne 0 ];then
+    echo "# --------------- Error compiling ${PATCHED_DTS_FILE} in chroot."
+    exit 155
+  fi
 fi
 
 cd
@@ -294,7 +297,7 @@ finish()
     echo "# --------------- Error unmounting target root partition."
     exit 133
   fi
-  rm -fR ${WORK_DIR}
+  # Do not 'rm -fR ${WORK_DIR}', persisting inner mounts would be wiped.
   echo "# --------------- Finished."
 }
 
