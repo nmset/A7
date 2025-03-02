@@ -3103,7 +3103,7 @@
 				power-role = "dual";
 				sink-pdos = <0x4019064>;
 				source-pdos = <0x401912c>;
-				try-power-role = "source";
+				try-power-role = "sink";
 
 				ports {
 					#address-cells = <0x01>;

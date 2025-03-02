@@ -30,7 +30,7 @@ Ensure that a good network bandwidth is being used. If packages can't be downloa
 
 See the original [forum thread](https://archlinuxarm.org/forum/viewtopic.php?f=67&t=17166) leading to this project. Any comment should continue in this discussion.
 
-A [patched device tree](resources/dts/README.md) source for this board is proposed to enable network connection on its ethernet port. This concerns kernel v6.13.
+A [patched device tree](resources/dts/README.md) source for this board is proposed to enable network connection on its ethernet port, and to allow discovery of devices on the USB-C port. This concerns kernel v6.13.
 
 ### Disclaimer
 
